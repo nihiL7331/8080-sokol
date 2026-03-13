@@ -46,6 +46,11 @@ public:
     std::copy(rom_data.begin(), rom_data.end(), memory.begin() + start_addr);
   }
 
+  // noops for now
+  uint8_t InPort(uint8_t port) { return port; }
+
+  uint8_t OutPort(uint8_t port) { return -1; }
+
   // Cleaner memory getter for disassembler
   const std::array<uint8_t, 0x10000> &GetMem() const { return memory; }
 };

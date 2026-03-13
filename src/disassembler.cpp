@@ -47,6 +47,9 @@ int Disassemble8080Op(const std::array<uint8_t, 0x10000> &code_buffer,
   case 0x0F:
     std::cout << "RRC";
     break;
+  case 0x20:
+    std::cout << "RIM";
+    break;
   case 0x21:
     std::cout << std::format("LXI  H,${:02x}{:02x}", code_buffer[pc + 2],
                              code_buffer[pc + 1]);
@@ -94,6 +97,9 @@ int Disassemble8080Op(const std::array<uint8_t, 0x10000> &code_buffer,
     std::cout << std::format("MVI  A,${:02x}", code_buffer[pc + 1]);
     opbytes = 2;
     break;
+  case 0x5F:
+    std::cout << "MOV  E,A";
+    break;
   case 0x66:
     std::cout << "MOV  H,M";
     break;
@@ -103,14 +109,26 @@ int Disassemble8080Op(const std::array<uint8_t, 0x10000> &code_buffer,
   case 0x6F:
     std::cout << "MOV  L,A";
     break;
+  case 0x7C:
+    std::cout << "MOV A,H";
+    break;
+  case 0x7D:
+    std::cout << "MOV A,L";
+    break;
   case 0x7E:
     std::cout << "MOV  A,M";
+    break;
+  case 0x89:
+    std::cout << "ADC  C";
     break;
   case 0xA7:
     std::cout << "ANA  A";
     break;
   case 0xAF:
     std::cout << "XRA  A";
+    break;
+  case 0xC0:
+    std::cout << "RNZ";
     break;
   case 0xC1:
     std::cout << "POP  B";
@@ -125,12 +143,20 @@ int Disassemble8080Op(const std::array<uint8_t, 0x10000> &code_buffer,
                              code_buffer[pc + 1]);
     opbytes = 3;
     break;
+  case 0xC4:
+    std::cout << std::format("CNZ  ${:02x}{:02x}", code_buffer[pc + 2],
+                             code_buffer[pc + 1]);
+    opbytes = 3;
+    break;
   case 0xC5:
     std::cout << "PUSH B";
     break;
   case 0xC6:
     std::cout << std::format("ADI  {:02x}", code_buffer[pc + 1]);
     opbytes = 2;
+    break;
+  case 0xC8:
+    std::cout << "RZ";
     break;
   case 0xC9:
     std::cout << "RET";
@@ -140,10 +166,22 @@ int Disassemble8080Op(const std::array<uint8_t, 0x10000> &code_buffer,
                              code_buffer[pc + 1]);
     opbytes = 3;
     break;
+  case 0xCC:
+    std::cout << std::format("CZ   ${:02x}{:02x}", code_buffer[pc + 2],
+                             code_buffer[pc + 1]);
+    opbytes = 3;
+    break;
   case 0xCD:
     std::cout << std::format("CALL ${:02x}{:02x}", code_buffer[pc + 2],
                              code_buffer[pc + 1]);
     opbytes = 3;
+    break;
+  case 0xCE:
+    std::cout << std::format("ACI  {:02x}", code_buffer[pc + 1]);
+    opbytes = 2;
+    break;
+  case 0xD0:
+    std::cout << "RNC";
     break;
   case 0xD1:
     std::cout << "POP  D";
@@ -153,8 +191,20 @@ int Disassemble8080Op(const std::array<uint8_t, 0x10000> &code_buffer,
                              code_buffer[pc + 1]);
     opbytes = 3;
     break;
+  case 0xD4:
+    std::cout << std::format("CNC  ${:02x}{:02x}", code_buffer[pc + 2],
+                             code_buffer[pc + 1]);
+    opbytes = 3;
+    break;
   case 0xD5:
     std::cout << "PUSH D";
+    break;
+  case 0xD6:
+    std::cout << std::format("SUI  {:02x}", code_buffer[pc + 1]);
+    opbytes = 2;
+    break;
+  case 0xD8:
+    std::cout << "RC";
     break;
   case 0xDA:
     std::cout << std::format("JC   ${:02x}{:02x}", code_buffer[pc + 2],
@@ -165,6 +215,18 @@ int Disassemble8080Op(const std::array<uint8_t, 0x10000> &code_buffer,
     std::cout << std::format("IN   {:02x}", code_buffer[pc + 1]);
     opbytes = 2;
     break;
+  case 0xDC:
+    std::cout << std::format("CC   ${:02x}{:02x}", code_buffer[pc + 2],
+                             code_buffer[pc + 1]);
+    opbytes = 3;
+    break;
+  case 0xDE:
+    std::cout << std::format("SBI  {:02x}", code_buffer[pc + 1]);
+    opbytes = 2;
+    break;
+  case 0xE0:
+    std::cout << "RPO";
+    break;
   case 0xE1:
     std::cout << "POP  H";
     break;
@@ -173,12 +235,20 @@ int Disassemble8080Op(const std::array<uint8_t, 0x10000> &code_buffer,
                              code_buffer[pc + 1]);
     opbytes = 2;
     break;
+  case 0xE4:
+    std::cout << std::format("CPO  ${:02x}{:02x}", code_buffer[pc + 2],
+                             code_buffer[pc + 1]);
+    opbytes = 3;
+    break;
   case 0xE5:
     std::cout << "PUSH H";
     break;
   case 0xE6:
     std::cout << std::format("ANI  {:02x}", code_buffer[pc + 1]);
     opbytes = 2;
+    break;
+  case 0xE8:
+    std::cout << "RPE";
     break;
   case 0xEA:
     std::cout << std::format("JPE  ${:02x}{:02x}", code_buffer[pc + 2],
@@ -188,6 +258,21 @@ int Disassemble8080Op(const std::array<uint8_t, 0x10000> &code_buffer,
   case 0xEB:
     std::cout << "XCHG";
     break;
+  case 0xEC:
+    std::cout << std::format("CPE  ${:02x}{:02x}", code_buffer[pc + 2],
+                             code_buffer[pc + 1]);
+    opbytes = 3;
+    break;
+  case 0xEE:
+    std::cout << std::format("XRI  {:02x}", code_buffer[pc + 1]);
+    opbytes = 2;
+    break;
+  case 0xEF:
+    std::cout << "RST 5";
+    break;
+  case 0xF0:
+    std::cout << "RP";
+    break;
   case 0xF1:
     std::cout << "POP  PSW";
     break;
@@ -196,8 +281,20 @@ int Disassemble8080Op(const std::array<uint8_t, 0x10000> &code_buffer,
                              code_buffer[pc + 1]);
     opbytes = 3;
     break;
+  case 0xF4:
+    std::cout << std::format("CP   ${:02x}{:02x}", code_buffer[pc + 2],
+                             code_buffer[pc + 1]);
+    opbytes = 3;
+    break;
   case 0xF5:
     std::cout << "PUSH PSW";
+    break;
+  case 0xF6:
+    std::cout << std::format("ORI  {:02x}", code_buffer[pc + 1]);
+    opbytes = 2;
+    break;
+  case 0xF8:
+    std::cout << "RM";
     break;
   case 0xFA:
     std::cout << std::format("JM   ${:02x}{:02x}", code_buffer[pc + 2],
@@ -206,6 +303,11 @@ int Disassemble8080Op(const std::array<uint8_t, 0x10000> &code_buffer,
     break;
   case 0xFB:
     std::cout << "EI";
+    break;
+  case 0xFC:
+    std::cout << std::format("CM   ${:02x}{:02x}", code_buffer[pc + 2],
+                             code_buffer[pc + 1]);
+    opbytes = 3;
     break;
   case 0xFE:
     std::cout << std::format("CPI  {:02x}", code_buffer[pc + 1]);
