@@ -48,7 +48,8 @@ int main(int argc, char *argv[]) {
 
   while (true) {
     if (cpu.GetPC() == 0x0000) {
-      std::cout << "Reached 0x0000. Emulator stopped." << std::endl;
+      std::cout << std::endl
+                << "Reached 0x0000. Emulator stopped." << std::endl;
       break;
     }
     // BDOS

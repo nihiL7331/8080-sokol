@@ -25,15 +25,15 @@ public:
   }
 
   void Write(uint16_t addr, uint8_t data) {
-    // ROM is read-only, so we skip writing to it
-    if (addr < 0x2000)
-      return;
-
-    // RAM mirror handle - if in 0x4000 - 0x5FFF range,
-    // move back to RAM area
-    if (addr < 0x6000) {
-      addr = 0x2000 | (addr & 0x1FFF);
-    }
+    // // ROM is read-only, so we skip writing to it
+    // if (addr < 0x2000)
+    //   return;
+    //
+    // // RAM mirror handle - if in 0x4000 - 0x5FFF range,
+    // // move back to RAM area
+    // if (addr < 0x6000) {
+    //   addr = 0x2000 | (addr & 0x1FFF);
+    // }
 
     // Write to RAM/VRAM
     memory[addr] = data;
