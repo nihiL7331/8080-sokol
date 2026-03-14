@@ -11,7 +11,7 @@ add_executable(emu8080
   src/main_emu.cpp
   src/disassembler.cpp
   src/cpu.cpp
-  # src/sokol.cpp
+  src/sokol.cpp
 )
 
 # add_executable(disassembler
@@ -22,17 +22,17 @@ add_executable(emu8080
 target_include_directories(emu8080 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 # target_include_directories(disassembler PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 
-if (APPLE)
+if(APPLE)
   enable_language(OBJCXX)
-  # set_source_files_properties(src/sokol.cpp PROPERTIES LANGUAGE OBJCXX)
-    
+  set_source_files_properties(src/sokol.cpp PROPERTIES LANGUAGE OBJCXX)
+
   target_link_libraries(emu8080 PRIVATE
     "-framework Cocoa"
     "-framework QuartzCore"
     "-framework OpenGL"
     "-framework AudioToolbox"
   )
-elseif (UNIX AND NOT APPLE)
+elseif(UNIX AND NOT APPLE)
   target_link_libraries(emu8080 PRIVATE
     GL
     dl
@@ -42,9 +42,9 @@ elseif (UNIX AND NOT APPLE)
     Xi
     Xcursor
     Xrandr
-    asound  
+    asound
   )
-elseif (WIN32)
+elseif(WIN32)
   target_link_libraries(emu8080 PRIVATE
     kernel32
     user32

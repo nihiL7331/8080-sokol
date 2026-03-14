@@ -1,9 +1,8 @@
 #include "cpu.hpp"
 #include "disassembler.hpp"
-#include <cstdlib>
 #include <utility>
 
-void CPU::Step() {
+int CPU::Step() {
   Disassemble8080Op(bus.GetMem(), PC);
   uint8_t opcode = bus.Read(PC);
 
@@ -1204,9 +1203,8 @@ void CPU::Step() {
     break;
   }
   case 0xD3: { // OUT D8
-    // TODO:
     uint8_t port = bus.Read(PC++);
-    bus.OutPort(port);
+    bus.OutPort(port, A);
     break;
   }
   case 0xD4: { // CNC adr
@@ -1260,8 +1258,8 @@ void CPU::Step() {
     break;
   }
   case 0xDB: { // IN D8 (special)
-    // TODO:
-    A = bus.InPort(bus.Read(PC++));
+    uint8_t port = bus.Read(PC++);
+    A = bus.InPort(port);
     break;
   }
   case 0xDC: { // CC adr
@@ -1435,6 +1433,7 @@ void CPU::Step() {
     break;
   }
   case 0xF3: { // DI (special)
+    I = false;
     break;
   }
   case 0xF4: { // CP adr
@@ -1523,4 +1522,6 @@ void CPU::Step() {
     break;
   }
   }
+
+  return 4; // TODO:
 }

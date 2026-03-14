@@ -34,17 +34,10 @@ public:
   CPU(class Bus &b) : bus(b), PC(0), SP(0), F(0x02), I(false) {};
   ~CPU() = default;
 
-  void Step();
+  int Step();
 
   // For debug purposes
-  void SetPC(uint16_t set) { PC = set; }
   uint16_t GetPC() { return PC; }
-  void SetSP(uint16_t set) { SP = set; }
-  uint16_t GetSP() { return SP; }
-  uint8_t GetC() { return C; }
-  uint8_t GetD() { return D; }
-  uint8_t GetE() { return E; }
-  //
 
   void SetFlag(const uint8_t mask, bool cond) {
     uint8_t bs = -static_cast<uint8_t>(cond);
@@ -55,11 +48,22 @@ public:
     SetFlag(FLAG_S, res & FLAG_S);
     SetFlag(FLAG_P, (std::popcount(res) & 1) == 0);
   }
-
   void UpdateFlags(uint8_t res, bool cy, bool ac) {
     UpdateFlagsZSP(res);
     SetFlag(FLAG_CY, cy);
     SetFlag(FLAG_AC, ac);
+  }
+
+  void GenerateInterrupt(uint8_t opc) {
+    if (I) {
+      I = false;
+      bus.Write(--SP, PC >> 8);
+      bus.Write(--SP, PC & 0xFF);
+      if (opc == 0xCF)
+        PC = 0x0008;
+      else if (opc == 0xD7)
+        PC = 0x0010;
+    }
   }
 };
 
