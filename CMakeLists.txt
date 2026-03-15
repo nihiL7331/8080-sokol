@@ -12,6 +12,7 @@ add_executable(emu8080
   src/disassembler.cpp
   src/cpu.cpp
   src/sokol.cpp
+  src/audio.cpp
 )
 
 # add_executable(disassembler

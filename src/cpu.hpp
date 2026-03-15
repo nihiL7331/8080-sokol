@@ -29,15 +29,17 @@ private:
   Bus &bus;
   // CPU interrupt
   bool I;
+  bool log;
 
 public:
-  CPU(class Bus &b) : bus(b), PC(0), SP(0), F(0x02), I(false) {};
+  CPU(class Bus &b) : bus(b), PC(0), SP(0), F(0x02), I(false), log(false) {};
   ~CPU() = default;
 
   int Step();
 
   // For debug purposes
   uint16_t GetPC() { return PC; }
+  void Log(bool set) { log = set; }
 
   void SetFlag(const uint8_t mask, bool cond) {
     uint8_t bs = -static_cast<uint8_t>(cond);

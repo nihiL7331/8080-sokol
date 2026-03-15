@@ -3,6 +3,7 @@
 #include "sokol/sokol_gfx.h"
 #include "sokol/sokol_glue.h"
 
+#include "audio.hpp"
 #include "bus.hpp"
 #include "cpu.hpp"
 
@@ -30,7 +31,7 @@ std::vector<uint8_t> ReadROMFile(const std::string &path) {
   std::ifstream file(path, std::ios::binary | std::ios::ate);
 
   if (!file.is_open()) {
-    throw std::runtime_error("Failed to open ROM: " + path);
+    throw std::runtime_error("Failed to open file: " + path);
   }
 
   std::streamsize size = file.tellg();
@@ -42,6 +43,24 @@ std::vector<uint8_t> ReadROMFile(const std::string &path) {
   }
 
   return {};
+}
+
+bool LoadWavFile(const std::string &filename, Sound &out) {
+  std::vector<uint8_t> file_bytes = ReadROMFile(filename);
+
+  if (file_bytes.empty()) {
+    std::cerr << "Could not find file: " << filename << std::endl;
+    return false;
+  }
+
+  auto parsed_result = ParseFromBytes(file_bytes);
+
+  if (parsed_result.has_value()) {
+    out.samples = std::move(parsed_result->samples);
+    return true;
+  }
+
+  return false;
 }
 
 void RenderVRAM(const std::array<uint8_t, 0x10000> &memory) {
@@ -63,7 +82,6 @@ void RenderVRAM(const std::array<uint8_t, 0x10000> &memory) {
 void InitializeSystem(std::string path) {
   try {
     std::vector<uint8_t> rom = ReadROMFile(path);
-
     bus.LoadROM(rom, 0x0000);
   } catch (const std::exception &e) {
     std::cerr << "Initialization error: " << e.what() << std::endl;
@@ -144,6 +162,21 @@ void init(void) {
   view_desc.texture.image = screen_tex;
   bind.views[0] = sg_make_view(&view_desc);
   bind.samplers[0] = screen_smp;
+
+  LoadWavFile("sounds/0.wav", sfx_ufo);
+  LoadWavFile("sounds/1.wav", sfx_shoot);
+  LoadWavFile("sounds/2.wav", sfx_player_die);
+  LoadWavFile("sounds/3.wav", sfx_invader_die);
+  LoadWavFile("sounds/4.wav", sfx_fleet_1);
+  LoadWavFile("sounds/5.wav", sfx_fleet_2);
+  LoadWavFile("sounds/6.wav", sfx_fleet_3);
+  LoadWavFile("sounds/7.wav", sfx_fleet_4);
+  LoadWavFile("sounds/8.wav", sfx_ufo_hit);
+  LoadWavFile("sounds/9.wav", sfx_extra_ship);
+
+  saudio_desc audio_desc = {};
+  audio_desc.stream_cb = AudioCallback;
+  saudio_setup(&audio_desc);
 }
 
 void frame(void) {
@@ -193,7 +226,10 @@ void event(const sapp_event *ev) {
     case SAPP_KEYCODE_C:
       bit = 0x01;
       break;
-    case SAPP_KEYCODE_ENTER:
+    case SAPP_KEYCODE_2:
+      bit = 0x02;
+      break;
+    case SAPP_KEYCODE_1:
       bit = 0x04;
       break;
     case SAPP_KEYCODE_SPACE:
@@ -209,17 +245,26 @@ void event(const sapp_event *ev) {
       return;
     }
 
-    if (down)
+    if (down) {
       bus.SetPort(1, bus.InPort(1) | bit);
-    else
+      bus.SetPort(2, bus.InPort(2) | bit);
+    } else {
       bus.SetPort(1, bus.InPort(1) & ~bit);
+      bus.SetPort(2, bus.InPort(2) & ~bit);
+    }
   }
 }
 
 sapp_desc sokol_main(int argc, char *argv[]) {
   (void)argc;
 
-  InitializeSystem(argv[1]);
+  if (argc > 1) {
+    std::string arg = argv[1];
+    if (arg == "--log" || arg == "-l")
+      cpu.Log(true);
+  }
+
+  InitializeSystem("roms/invaders.rom");
 
   sapp_desc app = {};
   app.init_cb = init;

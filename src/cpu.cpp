@@ -1,10 +1,32 @@
 #include "cpu.hpp"
 #include "disassembler.hpp"
+#include <array>
 #include <utility>
 
+static const std::array<uint8_t, 256> OP_CYCLES = {
+    4, 10, 7,  5,  5,  5,  7,  4,  4, 10, 7,  5,  5,  5,  7, 4,  // 0x00
+    4, 10, 7,  5,  5,  5,  7,  4,  4, 10, 7,  5,  5,  5,  7, 4,  // 0x10
+    4, 10, 16, 5,  5,  5,  7,  4,  4, 10, 16, 5,  5,  5,  7, 4,  // 0x20
+    4, 10, 13, 5,  10, 10, 10, 4,  4, 10, 13, 5,  5,  5,  7, 4,  // 0x30
+    5, 5,  5,  5,  5,  5,  7,  5,  5, 5,  5,  5,  5,  5,  7, 5,  // 0x40
+    5, 5,  5,  5,  5,  5,  7,  5,  5, 5,  5,  5,  5,  5,  7, 5,  // 0x50
+    5, 5,  5,  5,  5,  5,  7,  5,  5, 5,  5,  5,  5,  5,  7, 5,  // 0x60
+    7, 7,  7,  7,  7,  7,  7,  7,  5, 5,  5,  5,  5,  5,  7, 5,  // 0x70
+    4, 4,  4,  4,  4,  4,  7,  4,  4, 4,  4,  4,  4,  4,  7, 4,  // 0x80
+    4, 4,  4,  4,  4,  4,  7,  4,  4, 4,  4,  4,  4,  4,  7, 4,  // 0x90
+    4, 4,  4,  4,  4,  4,  7,  4,  4, 4,  4,  4,  4,  4,  7, 4,  // 0xA0
+    4, 4,  4,  4,  4,  4,  7,  4,  4, 4,  4,  4,  4,  4,  7, 4,  // 0xB0
+    5, 10, 10, 10, 11, 11, 7,  11, 5, 10, 10, 10, 11, 17, 7, 11, // 0xC0
+    5, 10, 10, 10, 11, 11, 7,  11, 5, 10, 10, 10, 11, 17, 7, 11, // 0xD0
+    5, 10, 10, 18, 11, 11, 7,  11, 5, 5,  10, 4,  11, 17, 7, 11, // 0xE0
+    5, 10, 10, 4,  11, 11, 7,  11, 5, 5,  10, 4,  11, 17, 7, 11  // 0xF0
+};
+
 int CPU::Step() {
-  Disassemble8080Op(bus.GetMem(), PC);
+  if (log)
+    Disassemble8080Op(bus.GetMem(), PC);
   uint8_t opcode = bus.Read(PC);
+  int cycles = OP_CYCLES[opcode];
 
   PC++;
 
@@ -1064,6 +1086,7 @@ int CPU::Step() {
       uint8_t lo = bus.Read(SP++);
       uint8_t hi = bus.Read(SP++);
       PC = (hi << 8) | lo;
+      cycles += 6;
     }
     break;
   }
@@ -1186,6 +1209,7 @@ int CPU::Step() {
       uint8_t lo = bus.Read(SP++);
       uint8_t hi = bus.Read(SP++);
       PC = (hi << 8) | lo;
+      cycles += 6;
     }
     break;
   }
@@ -1298,6 +1322,7 @@ int CPU::Step() {
       uint8_t lo = bus.Read(SP++);
       uint8_t hi = bus.Read(SP++);
       PC = (hi << 8) | lo;
+      cycles += 6;
     }
     break;
   }
@@ -1415,6 +1440,7 @@ int CPU::Step() {
       uint8_t lo = bus.Read(SP++);
       uint8_t hi = bus.Read(SP++);
       PC = (hi << 8) | lo;
+      cycles += 6;
     }
     break;
   }
@@ -1523,5 +1549,5 @@ int CPU::Step() {
   }
   }
 
-  return 4; // TODO:
+  return cycles;
 }

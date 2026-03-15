@@ -1,6 +1,7 @@
 #ifndef BUS_HPP
 #define BUS_HPP
 
+#include "audio.hpp"
 #include <array>
 #include <cstdint>
 #include <vector>
@@ -11,10 +12,12 @@ private:
   // It's better than separte arrays for ROM, RAM, VRAM because its O(1) lookup
   // + it's easier/cleaner
   std::array<uint8_t, 0x10000> memory{};
-  uint16_t sh_reg = 0;
-  uint8_t sh_off = 0;
+  uint16_t sh_reg = 0x0000;
+  uint8_t sh_off = 0x00;
   uint8_t p1 = 0x00;
   uint8_t p2 = 0x00;
+  uint8_t lp3 = 0x00;
+  uint8_t lp5 = 0x00;
 
 public:
   Bus() = default;
@@ -76,10 +79,39 @@ public:
       sh_reg = (sh_reg >> 8) | (val << 8);
       break;
     }
-    case 3:
+    case 3: {
+      uint8_t ris_edge = val & ~lp3;
+      if (ris_edge & 0x01)
+        PlaySound(&sfx_ufo, true);
+      else if (ris_edge & 0x02)
+        PlaySound(&sfx_shoot);
+      else if (ris_edge & 0x04)
+        PlaySound(&sfx_player_die);
+      else if (ris_edge & 0x08)
+        PlaySound(&sfx_invader_die);
+      else if (ris_edge & 0x10)
+        PlaySound(&sfx_extra_ship);
+
+      if ((lp3 & 0x01) && !(val & 0x01))
+        StopSound(&sfx_ufo);
+      lp3 = val;
       break;
-    case 5:
+    }
+    case 5: {
+      uint8_t ris_edge = val & ~lp5;
+      if (ris_edge & 0x01)
+        PlaySound(&sfx_fleet_1);
+      else if (ris_edge & 0x02)
+        PlaySound(&sfx_fleet_2);
+      else if (ris_edge & 0x04)
+        PlaySound(&sfx_fleet_3);
+      else if (ris_edge & 0x08)
+        PlaySound(&sfx_fleet_4);
+      else if (ris_edge & 0x10)
+        PlaySound(&sfx_ufo_hit);
+      lp5 = val;
       break;
+    }
     }
   }
 
